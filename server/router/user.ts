@@ -14,27 +14,44 @@ export const userRouter = router({
       )
       .output(
          z.object({
-            token: z.string(),
+            token: z.string().optional(),
          })
       )
       .mutation(async ({ input, ctx }) => {
          const username = input.username
          const password = input.password
 
-         const createUser = await ctx.prisma.user.create({
-            data: {
-               username,
-               password,
+         const findUser = await ctx.prisma.user.findFirst({
+            where: {
+               username: username,
             },
          })
 
-         const token = jwt.sign(
-            {
-               id: createUser.id,
-            },
-            JWT_SECRET!
-         )
-         return { token }
+         if (findUser) {
+            throw new TRPCError({
+               code: 'NOT_IMPLEMENTED',
+               message: 'Username already taken',
+            })
+         }
+         try {
+            const createUser = await ctx.prisma.user.create({
+               data: {
+                  username,
+                  password,
+               },
+            })
+
+            const token = jwt.sign(
+               {
+                  id: createUser.id,
+               },
+               JWT_SECRET!
+            )
+            return { token }
+         } catch (error) {
+            console.error(error)
+            return { token: undefined }
+         }
       }),
    signIn: publicProcedure
       .input(
