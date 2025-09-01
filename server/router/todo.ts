@@ -26,4 +26,20 @@ export const todoRouter = router({
             return { message: 'Cant add todo' }
          }
       }),
+
+   getAllTodos: publicProcedure.query(async ({ ctx }) => {
+      console.log('Control reached here')
+      console.log(ctx.auth?.userId)
+      try {
+         const findTodos = await ctx.prisma.todo.findMany({
+            where: {
+               userId: ctx.auth?.userId,
+            },
+         })
+         return findTodos
+      } catch (error) {
+         console.error(error)
+         return []
+      }
+   }),
 })

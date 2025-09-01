@@ -1,4 +1,34 @@
+import { useRef } from 'react'
+import { trpc } from '../utils/trpc'
+import { useMutation } from '@tanstack/react-query'
+
 export const SignIn = () => {
+   const userRef = useRef<HTMLInputElement>(null)
+   const passwordRef = useRef<HTMLInputElement>(null)
+
+   const onSubmit = () => {
+      const username = userRef.current?.value
+      const password = passwordRef.current?.value
+
+      if (!username || !password) {
+         alert('Please enter username and password')
+         return
+      }
+
+      const submit = useMutation(trpc.user.signIn.mutationOptions())
+
+      submit.mutate({
+         username: username,
+         password: password,
+      })
+
+      if (!submit.data?.token) {
+         console.log('Not receicved token')
+         return
+      }
+
+      localStorage.setItem('token', submit.data.token)
+   }
    return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-6">
          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
@@ -19,6 +49,7 @@ export const SignIn = () => {
                      Username
                   </label>
                   <input
+                     ref={userRef}
                      id="username"
                      type="text"
                      placeholder="Enter your username"
@@ -35,6 +66,7 @@ export const SignIn = () => {
                      Password
                   </label>
                   <input
+                     ref={passwordRef}
                      id="password"
                      type="password"
                      placeholder="••••••••"
@@ -46,6 +78,7 @@ export const SignIn = () => {
                <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition duration-300"
+                  onClick={onSubmit}
                >
                   Sign Up
                </button>

@@ -1,4 +1,44 @@
+import { useMutation } from '@tanstack/react-query'
+import { useRef } from 'react'
+import { trpc } from '../utils/trpc'
+import { useNavigate, useNavigation } from 'react-router'
+
 export const SignUp = () => {
+   const userRef = useRef<HTMLInputElement>(null)
+   const passwordRef = useRef<HTMLInputElement>(null)
+   const navigate = useNavigate()
+
+   // ✅ Hook at component top-level
+   const signup = useMutation(trpc.user.signup.mutationOptions())
+
+   const onSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      const username = userRef.current?.value
+      const password = passwordRef.current?.value
+
+      if (!username || !password) {
+         alert('Please enter username and password')
+         return
+      }
+
+      // ✅ Call mutate
+      signup.mutate(
+         { username, password },
+         {
+            onSuccess: (data) => {
+               if (!data?.token) {
+                  console.log('No token received')
+                  return
+               }
+               localStorage.setItem('token', data.token)
+               navigate('/home')
+            },
+            onError: (err) => {
+               console.error('Signup failed:', err)
+            },
+         }
+      )
+   }
    return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-6">
          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
@@ -19,6 +59,7 @@ export const SignUp = () => {
                      Username
                   </label>
                   <input
+                     ref={userRef}
                      id="username"
                      type="text"
                      placeholder="Enter your username"
@@ -35,6 +76,7 @@ export const SignUp = () => {
                      Password
                   </label>
                   <input
+                     ref={passwordRef}
                      id="password"
                      type="password"
                      placeholder="••••••••"
@@ -46,6 +88,7 @@ export const SignUp = () => {
                <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition duration-300"
+                  onClick={(e: any) => onSubmit(e)}
                >
                   Sign Up
                </button>

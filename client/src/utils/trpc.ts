@@ -12,7 +12,15 @@ export const queryClient = new QueryClient({
 })
 
 const trpcClient = createTRPCClient<AppRouter>({
-   links: [httpBatchLink({ url: 'http://localhost:2022' })],
+   links: [
+      httpBatchLink({
+         url: 'http://localhost:4000/trpc',
+         headers: () => {
+            const token = localStorage.getItem('token')
+            return { Authorization: `Bearer ${token}` }
+         },
+      }),
+   ],
 })
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
