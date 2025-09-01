@@ -7,4 +7,4 @@ export const appRouter = router({
    todo: todoRouter,
 })
 
-export const AppRouter = typeof appRouter
+export type AppRouter = typeof appRouter
